@@ -20,9 +20,9 @@ class ProcessCodeTask {
        // ensure dir exists for outputFile
        // mkdir fails if directory already exists,
        // so let's check that first.
-       $inputFileDir = dirname($this->inputFile);
-       if (! is_dir($inputFileDir)) {
-            mkdir($inputFileDir, 0777, TRUE);
+       $outputFileDir = dirname($this->outputFile);
+       if (! is_dir($outputFileDir)) {
+            mkdir($outputFileDir, 0777, TRUE);
        }
        
        $context = new ProcessCodeContext;
@@ -50,13 +50,13 @@ class ProcessCodeTask {
                 // set up context.
                 $context->srcFile = $fileAugCodes['dir'] . DIRECTORY_SEPARATOR .
                     $fileAugCodes['relativePath'];
-                $context->fileAugCodes = $fileAugCodes;
+                $context->fileAugCodes = &$fileAugCodes;
                 $context->fileScope = [];
                 $this->logVerbose("Processing " . $context->srcFile);
                 
                 // fetch arguments and parse any json arguments found
-                $fileAugCodesList = $fileAugCodes['augmentingCodes'];
-                // due to PHP by value semantics
+                $fileAugCodesList = &$fileAugCodes['augmentingCodes'];
+                // due to PHP pass by value semantics
                 // iterate by reference so changes
                 // to augCode arrays can persist after
                 // loop.
@@ -84,7 +84,7 @@ class ProcessCodeTask {
                 
                 $beginErrorCount = count($this->allErrors);
                 for ($i = 0; $i < count($fileAugCodesList); $i++) {
-                    $augCode = $fileAugCodesList[$i];
+                    $augCode = &$fileAugCodesList[$i];
                     if ($augCode['processed']) {
                         continue;
                     }
@@ -95,6 +95,7 @@ class ProcessCodeTask {
                     foreach ($genCodes as $g) {
                         $fileGenCodeList[] = $g;
                     }
+                    //print "Modified: " . print_r($augCode, TRUE) . PHP_EOL;
                 }
                 
                 $this->validateGeneratedCodeIds($fileGenCodeList, $context);
@@ -135,7 +136,7 @@ class ProcessCodeTask {
         print "[WARN] " . $message . PHP_EOL;
     }
     
-    public function processAugCode($evalFunction, string $functionName, array $augCode, ProcessCodeContext $context) : array {
+    public function processAugCode($evalFunction, string $functionName, array &$augCode, ProcessCodeContext &$context) : array {
         try {
             $result = $evalFunction($functionName, $augCode, $context);
             if ($result === NULL) {
@@ -143,8 +144,19 @@ class ProcessCodeTask {
             }
             $converted = [];
             if (is_iterable($result)) {
+                $fileAugCodesList = &$context->fileAugCodes['augmentingCodes'];
                 foreach ($result as $item) {
-                    $converted[] = $this->convertGenCodeItem($item);
+                    $genCode = $this->convertGenCodeItem($item);
+                    $converted[] = $genCode;
+                    // try and mark corresponding aug code as processed.
+                    if ($genCode->id > 0) {
+                        foreach ($fileAugCodesList as &$augCode) {
+                            if ($augCode['id'] == $genCode->id) {
+                                $augCode['processed'] = TRUE;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             else {
@@ -187,14 +199,21 @@ class ProcessCodeTask {
         $ids = array_map(function($x) {
             return $x->id;
         }, $genCodes);
+        // Interpret use of -1 or negatives as intentional and skip
+        // validating negative ids.
         $invalidIds = array_filter($ids, function($value) {
-            return $value <= 0;
+            return ! $value;
         });
         if (count($invalidIds)) {
             $this->createException($context, 'At least one generated code id was not set. Found: ' . print_r($ids, true));
         }
-        elseif (count(array_unique($ids)) < count($ids)) {
-            $this->createException($context, 'Generated code ids must be unique, but found duplicates: ' . print_r($ids, true));
+        else {
+            $duplicateIds = array_unique(array_filter($ids, function($value) {
+                return $value > 0;
+            }));
+            if (count($duplicateIds) < count($ids)) {
+                $this->createException($context, 'Valid generated code ids must be unique, but found duplicates: ' . print_r($ids, true));
+            }
         }
     }            
     

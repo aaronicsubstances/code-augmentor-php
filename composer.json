@@ -12,10 +12,7 @@
     "autoload": {
         "psr-4": {
             "aaronicsubstances\\code_augmentor_support\\" : "src/"
-        },
-        "files": [
-            "src/Email.php"
-        ]
+        }
     },
     "require": {
 		"php": ">=7.1"
