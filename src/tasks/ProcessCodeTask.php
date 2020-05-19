@@ -21,7 +21,7 @@ class ProcessCodeTask {
        // mkdir fails if directory already exists,
        // so let's check that first.
        $outputFileDir = dirname($this->outputFile);
-       if (! is_dir($outputFileDir)) {
+       if ($outputFileDir && ! is_dir($outputFileDir)) {
             mkdir($outputFileDir, 0777, TRUE);
        }
        
