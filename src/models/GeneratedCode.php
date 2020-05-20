@@ -9,6 +9,7 @@ class GeneratedCode implements \JsonSerializable {
    public $skipped = FALSE;
    public $replaceAugCodeDirectives = FALSE;
    public $replaceGenCodeDirectives = FALSE;
+   public $disableAutoIndent = FALSE;
    
     public function jsonSerialize() : array {
         return [
@@ -17,7 +18,8 @@ class GeneratedCode implements \JsonSerializable {
             'indent' => $this->indent,
             'skipped' => $this->skipped,
             'replaceAugCodeDirectives' => $this->replaceAugCodeDirectives,
-            'replaceGenCodeDirectives' => $this->replaceGenCodeDirectives
+            'replaceGenCodeDirectives' => $this->replaceGenCodeDirectives,
+            'disableAutoIndent' => $this->disableAutoIndent
         ];
     }
 }
