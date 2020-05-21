@@ -93,6 +93,20 @@ final class ProcessCodeTaskTest extends TestCase
         print "Expected " . count($task->allErrors) . ' error(s)' . PHP_EOL;
     }
     
+    public function testUsageWithEvalerWithoutReturn(): void {
+        $task = new ProcessCodeTask;
+        $task->inputFile = __DIR__ . DIRECTORY_SEPARATOR . 'resources' .
+            DIRECTORY_SEPARATOR . 'aug_codes-01.json';
+        $task->outputFile = self::$tmpdir . DIRECTORY_SEPARATOR . 'genCodes-php-ignore.json';
+        
+        self::printHeader(__METHOD__);
+        $task->execute(function($functionName, $augCode, $context) {
+        });
+        self::printErrors($task);
+        $this->assertEquals(1, count($task->allErrors));
+        print "Expected " . count($task->allErrors) . ' error(s)' . PHP_EOL;
+    }
+    
     static function printHeader($methodName) {
         print PHP_EOL;
         print $methodName . PHP_EOL;

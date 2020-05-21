@@ -140,7 +140,7 @@ class ProcessCodeTask {
         try {
             $result = $evalFunction($functionName, $augCode, $context);
             if ($result === NULL) {
-                return [];
+                return [  $this->convertGenCodeItem(NULL) ];
             }
             $converted = [];
             if (is_iterable($result)) {
