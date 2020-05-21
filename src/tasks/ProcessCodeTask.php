@@ -201,19 +201,17 @@ class ProcessCodeTask {
         }, $genCodes);
         // Interpret use of -1 or negatives as intentional and skip
         // validating negative ids.
+        $validIds = array_filter($ids, function($value) {
+            return $value > 0;
+        });
         $invalidIds = array_filter($ids, function($value) {
             return ! $value;
         });
         if (count($invalidIds)) {
             $this->createException($context, 'At least one generated code id was not set. Found: ' . print_r($ids, true));
         }
-        else {
-            $duplicateIds = array_unique(array_filter($ids, function($value) {
-                return $value > 0;
-            }));
-            if (count($duplicateIds) < count($ids)) {
-                $this->createException($context, 'Valid generated code ids must be unique, but found duplicates: ' . print_r($ids, true));
-            }
+        else if (count(array_unique($validIds)) < count($validIds)) {
+            $this->createException($context, 'Valid generated code ids must be unique, but found duplicates: ' . print_r($ids, true));
         }
     }            
     
