@@ -1,14 +1,7 @@
 <?php declare(strict_types=1);
-namespace aaronicsubstances\code_augmentor_support\tasks;
-
-use aaronicsubstances\code_augmentor_support\models\{
-    ProcessCodeContext,
-    GeneratedCode,
-    ContentPart  
-};
+namespace aaronicsubstances\code_augmentor_support;
 
 class ProcessCodeTask {
-
    public $inputFile;
    public $outputFile;
    public $allErrors;
@@ -48,54 +41,53 @@ class ProcessCodeTask {
                 $fileAugCodes = self::jsonParse($line);
                 
                 // set up context.
-                $context->srcFile = $fileAugCodes['dir'] . DIRECTORY_SEPARATOR .
-                    $fileAugCodes['relativePath'];
-                $context->fileAugCodes = &$fileAugCodes;
+                $context->srcFile = $fileAugCodes->dir . DIRECTORY_SEPARATOR .
+                    $fileAugCodes->relativePath;
+                $context->fileAugCodes = $fileAugCodes;
                 $context->fileScope = [];
                 $this->logVerbose("Processing " . $context->srcFile);
                 
                 // fetch arguments and parse any json arguments found
-                $fileAugCodesList = &$fileAugCodes['augmentingCodes'];
+                $fileAugCodesList = &$fileAugCodes->augmentingCodes;
                 // due to PHP pass by value semantics
                 // iterate by reference so changes
                 // to augCode arrays can persist after
                 // loop.
                 foreach ($fileAugCodesList as &$augCode) {
-                    $augCode['processed'] = FALSE;
-                    $augCode['args'] = [];
-                    foreach ($augCode['blocks'] as $block) {
-                        if ($block['jsonify']) {
-                            $parsedArg = self::jsonParse($block['content']);
-                            $augCode['args'][] = $parsedArg;
+                    $augCode->processed = FALSE;
+                    $augCode->args = [];
+                    foreach ($augCode->blocks as &$block) {
+                        if ($block->jsonify) {
+                            $parsedArg = self::jsonParse($block->content);
+                            $augCode->args[] = $parsedArg;
                         }
-                        elseif ($block['stringify']) {
-                            $augCode['args'][] = $block['content'];
+                        elseif ($block->stringify) {
+                            $augCode->args[] = $block->content;
                         }
                     }
                 }
                     
                 # process aug codes
-                $fileGenCodes = [
-                    'fileId' => $fileAugCodes['fileId'],
+                $fileGenCodes = (object) [
+                    'fileId' => $fileAugCodes->fileId,
                     'generatedCodes' => []
                 ];
                 // fetch by reference so updates here affects $fileGenCodes
-                $fileGenCodeList = &$fileGenCodes['generatedCodes'];
+                $fileGenCodeList = &$fileGenCodes->generatedCodes;
                 
                 $beginErrorCount = count($this->allErrors);
                 for ($i = 0; $i < count($fileAugCodesList); $i++) {
                     $augCode = &$fileAugCodesList[$i];
-                    if ($augCode['processed']) {
+                    if ($augCode->processed) {
                         continue;
                     }
                         
                     $context->augCodeIndex = $i;
-                    $functionName = trim($augCode['blocks'][0]['content']);
+                    $functionName = trim($augCode->blocks[0]->content);
                     $genCodes = $this->processAugCode($evalFunction, $functionName, $augCode, $context);
                     foreach ($genCodes as $g) {
                         $fileGenCodeList[] = $g;
                     }
-                    //print "Modified: " . print_r($augCode, TRUE) . PHP_EOL;
                 }
                 
                 $this->validateGeneratedCodeIds($fileGenCodeList, $context);
@@ -136,7 +128,7 @@ class ProcessCodeTask {
         print "[WARN] " . $message . PHP_EOL;
     }
     
-    public function processAugCode($evalFunction, string $functionName, array &$augCode, ProcessCodeContext &$context) : array {
+    public function processAugCode($evalFunction, string $functionName, object $augCode, ProcessCodeContext $context) : array {
         try {
             $result = $evalFunction($functionName, $augCode, $context);
             if ($result === NULL) {
@@ -144,15 +136,15 @@ class ProcessCodeTask {
             }
             $converted = [];
             if (is_iterable($result)) {
-                $fileAugCodesList = &$context->fileAugCodes['augmentingCodes'];
+                $fileAugCodesList = &$context->fileAugCodes->augmentingCodes;
                 foreach ($result as $item) {
                     $genCode = $this->convertGenCodeItem($item);
                     $converted[] = $genCode;
                     // try and mark corresponding aug code as processed.
                     if ($genCode->id > 0) {
-                        foreach ($fileAugCodesList as &$augCode) {
-                            if ($augCode['id'] == $genCode->id) {
-                                $augCode['processed'] = TRUE;
+                        foreach ($fileAugCodesList as &$a) {
+                            if ($a->id == $genCode->id) {
+                                $a->processed = TRUE;
                                 break;
                             }
                         }
@@ -161,7 +153,7 @@ class ProcessCodeTask {
             }
             else {
                 $genCode = $this->convertGenCodeItem($result);
-                $genCode->id = $augCode['id'];
+                $genCode->id = $augCode->id;
                 $converted[] = $genCode;
             }
             return $converted;
@@ -172,16 +164,23 @@ class ProcessCodeTask {
         }
     }
 
-    private function convertGenCodeItem($item) : GeneratedCode {
+    private function convertGenCodeItem($item) {
         if ($item === NULL) {
-            $genCode = new GeneratedCode;
+            return (object) [
+                'id' => 0
+            ];
         }
-        elseif ($item instanceof GeneratedCode) {
-            $genCode = $item;
+        elseif (property_exists($item, 'contentParts')) {
+            if (!property_exists($item, 'id')) {
+                $item->id = 0;
+            }
+            return $item;
         }
-        elseif ($item instanceof ContentPart) {
-            $genCode = new GeneratedCode;
-            $genCode->contentParts[] = $item;
+        elseif (property_exists($item, 'content')) {
+            return (object) [
+                'id' => 0,
+                'contentParts' => [ $item ]
+            ];
         }
         else {
             // concatenation with strings isn't guaranteed to always succeed in PHP.
@@ -189,10 +188,16 @@ class ProcessCodeTask {
             // are culprits.
             // try conversion to string via concatenation and let
             // any exception be handled higher up the stack.
-            $genCode = new GeneratedCode;
-            $genCode->contentParts[] = new ContentPart(''.$item, FALSE);
+            $content = '' . $item;
+            $contentPart = (object) [
+                'content' => $content,
+                'exactMatch' => FALSE
+            ];
+            return (object) [
+                'id' => 0,
+                'contentParts' => [ $contentPart ]
+            ];
         }
-        return $genCode;
     }
     
     private function validateGeneratedCodeIds(array $genCodes, ProcessCodeContext $context) : void {
@@ -219,9 +224,9 @@ class ProcessCodeTask {
         $lineMessage = '';
         $stackTrace = '';
         if ($evalEx) {
-            $augCode = $context->fileAugCodes['augmentingCodes'][$context->augCodeIndex];
-            $lineMessage = " at line {$augCode['lineNumber']}";
-            $message = $augCode['blocks'][0]['content'] . ": " .
+            $augCode = $context->fileAugCodes->augmentingCodes[$context->augCodeIndex];
+            $lineMessage = " at line {$augCode->lineNumber}";
+            $message = $augCode->blocks[0]->content . ": " .
                 get_class($evalEx) . ": " . $evalEx->getMessage();
             //$stackTrace = PHP_EOL . $evalEx->getTraceAsString();
             $stackTrace = PHP_EOL . self::jTraceEx($evalEx);
@@ -230,12 +235,12 @@ class ProcessCodeTask {
         $this->allErrors[] = $exception;
     }
     
-    private static function compactJsonDump(array $obj) : string {
+    private static function compactJsonDump(object $obj) : string {
         return json_encode($obj, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
     
-    private static function jsonParse(string $str) : array {
-        return json_decode($str, TRUE, 512, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+    private static function jsonParse(string $str) {
+        return json_decode($str, FALSE, 512, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
     
     /**

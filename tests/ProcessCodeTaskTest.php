@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 
-use aaronicsubstances\code_augmentor_support\tasks\ProcessCodeTask;
+use aaronicsubstances\code_augmentor_support\ProcessCodeTask;
 
 // CLI command: ./vendor/bin/phpunit tests
 
