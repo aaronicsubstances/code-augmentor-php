@@ -19,14 +19,16 @@ final class ProcessCodeTaskTest extends TestCase
         // test that output dir can be recreated if absent.
         // do this only here, so subsequent tests verify that
         // existing output dir can be used successfully.
-        $objects = scandir(self::$tmpdir);
-        foreach ($objects as $object) {
-            // NB: . and .. also appear as directory entries
-            if (!is_dir($object)) {
-                unlink(self::$tmpdir . DIRECTORY_SEPARATOR . $object);
+        if (file_exists(self::$tmpdir)) {
+            $objects = scandir(self::$tmpdir);
+            foreach ($objects as $object) {
+                // NB: . and .. also appear as directory entries
+                if (!is_dir($object)) {
+                    unlink(self::$tmpdir . DIRECTORY_SEPARATOR . $object);
+                }
             }
+            rmdir(self::$tmpdir);
         }
-        rmdir(self::$tmpdir);
 
         $task = new ProcessCodeTask;
         $task->inputFile = __DIR__ . DIRECTORY_SEPARATOR . 'resources' . 

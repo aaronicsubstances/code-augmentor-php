@@ -1,6 +1,9 @@
 {
     "name": "aaronicsubstances/code-augmentor-support",
-    "description": "",
+    "type": "library",
+    "description": "Enables use of PHP 7 for writing code generation scripts for Code Augmentor",
+    "homepage": "https://github.com/aaronicsubstances/code-augmentor-php",
+    "keywords": [ "code-generation", "data-driven", "macro-processor" ],
     "license": "MIT",
     "authors": [
         {
@@ -8,7 +11,6 @@
             "email": "aaronbaffourawuah@gmail.com"
         }
     ],
-    "type": "project",
     "autoload": {
         "psr-4": {
             "aaronicsubstances\\code_augmentor_support\\" : "src/"
