@@ -14,7 +14,7 @@ At a minimum your `composer.json` file should contain:
 ```json
 {
     "require": {
-        "aaronicsubstances/code_augmentor_support": "1.0.0"    
+        "aaronicsubstances/code-augmentor-support": "1.0.0"    
     }
 }
 ```
@@ -32,7 +32,7 @@ It requires input and ouput file command-line arguments, and optional third argu
 ```json
 {
     "require": {
-        "aaronicsubstances/code_augmentor_support": "1.0.0"    
+        "aaronicsubstances/code-augmentor-support": "1.0.0"    
     },
     "autoload": {
         "classmap": [ "Snippets.php", "Worker.php" ]    
@@ -145,7 +145,7 @@ Instances of `ProcessCodeTask` have the following public fields:
    * `allErrors` - array which contains any errors encountered during execution.
    
 These methods can be overriden in a subclass:
-   * `logVerbose`, `logInfo`, `logWarn` - methods which are called with a format string, *args, and **kwargs, when a verbose message, normal message, or warning message is issued. By default normal and warning messages are printed to standard output, and verbose messages are ignored.
+   * `logVerbose`, `logInfo`, `logWarn` - methods which are called with a single string argument when a verbose message, normal message, or warning message is issued. By default normal and warning messages are printed to standard output, and verbose messages are ignored.
 
 The `evalFunction` function argument of the `execute` method is called with 3 arguments. The first is name of a function to invoke in the current PHP 7 scope, and the remaining two are an augmenting code object and a helper instance of the `ProcessCodeContext` in the same `aaronicsubstances\code_augmentor_support` namespace. These remaining two arguments are the arguments passed to the function to be invoked.
 
