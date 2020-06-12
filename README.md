@@ -1,6 +1,6 @@
-# code_augmentor_support
+# code-augmentor-support
 
-This package enables the use of PHP 7 as a scripting platform to generate code to serve the goals of [Code Augmentor](https://github.com/aaronicsubstances/code-augmentor).
+This package enables the use of PHP 7 as a scripting platform to generate code to serve the goals of Code Augmentor.
 
 Code Augmentor is a set of libraries, plugins and tools for bringing code generation techniques to every programmer. For a more detailed explanation please visit the main Code Augmentor Github repository [here](https://github.com/aaronicsubstances/code-augmentor).
 
@@ -139,7 +139,7 @@ The library's functionality is contained in the method `execute` of the class `P
 
 Instances of `ProcessCodeTask` have the following public fields:
 
-   * `inputFile` - path to the code generation request. Must be the prep file result of running the *code_aug_prepare* Ant task.
+   * `inputFile` - path to the code generation request. Must be the aug code file result of running the *code_aug_prepare* Ant task.
    * `outputFile` - path for writing out code generation response. Will be used as the gen code file input to the *code_aug_complete* Ant task.
    * `verbose` - boolean field which can be used with default verbose logging mechansim to enable printing of verbose mesages to standard output.
    * `allErrors` - array which contains any errors encountered during execution.
@@ -147,7 +147,7 @@ Instances of `ProcessCodeTask` have the following public fields:
 These methods can be overriden in a subclass:
    * `logVerbose`, `logInfo`, `logWarn` - methods which are called with a single string argument when a verbose message, normal message, or warning message is issued. By default normal and warning messages are printed to standard output, and verbose messages are ignored.
 
-The `evalFunction` function argument of the `execute` method is called with 3 arguments. The first is name of a function to invoke in the current PHP 7 scope, and the remaining two are an augmenting code object and a helper instance of the `ProcessCodeContext` in the same `aaronicsubstances\code_augmentor_support` namespace. These remaining two arguments are the arguments passed to the function to be invoked.
+The `evalFunction` function argument of the `execute` method is called with 3 arguments. The first is name of a function to invoke in the current PHP scope, and the remaining two are an augmenting code object and a helper instance of the `ProcessCodeContext` class in the same `aaronicsubstances\code_augmentor_support` namespace. These remaining two arguments are the arguments passed to the function to be invoked.
 
 The `evalFunction` is called with every augmenting code object encountered in the input file. It is expected to in turn call client-defined functions dynamically and receive from them a correponding generated code object to be written to the output file. As a convenience, it can return strings, content parts, and arrays of generated code objects.
 
@@ -167,3 +167,7 @@ The `evalFunction` is called with every augmenting code object encountered in th
 This library deserializes JSON objects into instances of the buitlin `stdClass`. It similarly requires objects to be serialized to be either dictionaries or instances of `stdClass`. 
 
 By so doing clients are provided with the convenience that any arbitrary field can be set on a JSON object, and it will get serialized.
+
+## Further Information
+
+For more information on the structure of augmenting code object, generated code object and other considerations, refer to [wiki](https://github.com/aaronicsubstances/code-augmentor/wiki/Documentation-for-Code-Generator-Scripts) in the main Code Augmentor repository.
