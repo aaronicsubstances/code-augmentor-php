@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1833cd182d6c5c80a45f5aa9c49e3361",
+    "content-hash": "6434847044bf3e1dda9df0aa0c766727",
     "packages": [
         {
             "name": "aaronicsubstances/code-augmentor-support",
-            "version": "v1.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aaronicsubstances/code-augmentor-php.git",
-                "reference": "62e5816227dff1f83a6dc322914df9eb6c65ff95"
+                "reference": "3b9823c428af75229b83831f43426cdef4a258a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aaronicsubstances/code-augmentor-php/zipball/62e5816227dff1f83a6dc322914df9eb6c65ff95",
-                "reference": "62e5816227dff1f83a6dc322914df9eb6c65ff95",
+                "url": "https://api.github.com/repos/aaronicsubstances/code-augmentor-php/zipball/3b9823c428af75229b83831f43426cdef4a258a9",
+                "reference": "3b9823c428af75229b83831f43426cdef4a258a9",
                 "shasum": ""
             },
             "require": {
@@ -49,7 +49,7 @@
                 "data-driven",
                 "macro-processor"
             ],
-            "time": "2020-05-31T16:12:51+00:00"
+            "time": "2020-06-13T08:16:24+00:00"
         }
     ],
     "packages-dev": [],

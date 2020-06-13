@@ -14,7 +14,7 @@ At a minimum your `composer.json` file should contain:
 ```json
 {
     "require": {
-        "aaronicsubstances/code-augmentor-support": "1.0.0"    
+        "aaronicsubstances/code-augmentor-support": "^1.0.1"    
     }
 }
 ```
@@ -32,7 +32,7 @@ It requires input and ouput file command-line arguments, and optional third argu
 ```json
 {
     "require": {
-        "aaronicsubstances/code-augmentor-support": "1.0.0"    
+        "aaronicsubstances/code-augmentor-support": "^1.0.1"    
     },
     "autoload": {
         "classmap": [ "Snippets.php", "Worker.php" ]    
