@@ -282,7 +282,7 @@ class ProcessCodeTask {
         }
         $result = join(PHP_EOL, $result);
         if ($prev)
-            $result  .= PHP_EOL . jTraceEx($prev, $seen);
+            $result  .= PHP_EOL . self::jTraceEx($prev, $seen);
 
         return $result;
     }

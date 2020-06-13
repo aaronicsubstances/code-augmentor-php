@@ -1,6 +1,6 @@
 {
     "require": {
-        "aaronicsubstances/code-augmentor-support": "1.0.0"    
+        "aaronicsubstances/code-augmentor-support": "^1.0.1"    
     },
     "autoload": {
         "classmap": [ "MyFunctions.php", "OtherFunctions.php" ]
