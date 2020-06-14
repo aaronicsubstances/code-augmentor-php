@@ -3,8 +3,6 @@ use PHPUnit\Framework\TestCase;
 
 use aaronicsubstances\code_augmentor_support\ProcessCodeTask;
 
-// CLI command: ./vendor/bin/phpunit tests
-
 /**
  * Main purpose of tests in this project is to test
  * error cases and the formatting of thrown exceptions.

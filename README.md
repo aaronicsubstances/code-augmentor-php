@@ -9,25 +9,15 @@ As far as this package and PHP 7 developers are concerned, it is enough to think
 
 ## Installing using Composer
 
-At a minimum your `composer.json` file should contain:
+`composer install code-augmentor-support`
 
-```json
-{
-    "require": {
-        "aaronicsubstances/code-augmentor-support": "^1.0.1"    
-    }
-}
-```
-
-Then install with `composer install`
-
-### Example
+## Example
 
 Below is a main script demonstrating how to set up the library for use with static functions defined in two client classes Snippets.php and Worker.php.
 
 It requires input and ouput file command-line arguments, and optional third argument to enable verbose logging.
 
-#### composer.json
+### composer.json
 
 ```json
 {
@@ -40,7 +30,7 @@ It requires input and ouput file command-line arguments, and optional third argu
 }
 ```
 
-#### main.php
+### main.php
 
 ```php
 <?php declare(strict_types=1);
@@ -78,7 +68,7 @@ if ($instance->allErrors) {
 }
 ```
 
-#### Snippets.php
+### Snippets.php
 
 ```php
 <?php  declare(strict_types=1);
@@ -91,7 +81,7 @@ class Snippets {
 }
 ```
 
-#### Worker.php
+### Worker.php
 
 ```php
 <?php  declare(strict_types=1);
@@ -115,7 +105,7 @@ class Worker {
 }
 ```
 
-#### test-augCodes.json (sample input file)
+### test-augCodes.json (sample input file)
 
 ```json
 { "genCodeStartDirective": "//:GS:", "genCodeEndDirective": "//:GE:", "embeddedStringDirective": "//:STR:", "embeddedJsonDirective": "//:JSON:", "skipCodeStartDirective": "//:SS:", "skipCodeEndDirective": "//:SE:", "augCodeDirective": "//:AUG_CODE:", "inlineGenCodeDirective": "//:GG:", "nestedLevelStartMarker": "[", "nestedLevelEndMarker": "]" }
@@ -124,7 +114,7 @@ class Worker {
 
 ```
 
-#### test-genCodes.json (expected output file)
+### test-genCodes.json (expected output file)
 
 ```json
 {}
@@ -162,7 +152,7 @@ The `evalFunction` is called with every augmenting code object encountered in th
    * newGenCode() - convenience method available to clients for creating a generated code object with empty `contentParts` array field.
    * newContent(content, exactMatch=false) - convenience method available to clients for creating a new content part object with fields set with arguments supplied to the function.
 
-## Note on JSON serialization
+### Note on JSON serialization
 
 This library deserializes JSON objects into instances of the buitlin `stdClass`. It similarly requires objects to be serialized to be either dictionaries or instances of `stdClass`. 
 
@@ -171,3 +161,19 @@ By so doing clients are provided with the convenience that any arbitrary field c
 ## Further Information
 
 For more information on the structure of augmenting code object, generated code object and other considerations, refer to [wiki](https://github.com/aaronicsubstances/code-augmentor/wiki/Documentation-for-Code-Generator-Scripts) in the main Code Augmentor repository.
+
+## Building and Testing Locally
+
+[Composer](https://getcomposer.org/) is the build system for this project. So it is required to set up it first.
+
+   * Clone repository locally
+   * Install project dependencies with `composer install`
+   * With all dependencies present locally, test project with `./vendor/bin/phpunit tests`
+
+*NB:*
+
+   1. `composer install` took so long (at least on Windows 10 as at 28th April 2020). Setting SSL endpoint with
+`composer config --global repo.packagist composer https://packagist.org`
+fixed it up.
+   2. `composer dump-autoload` needs to be rerun when new classes are added to project with classmap instead of PSR-4 in composer.json.
+   3. `composer require --dev phpunit/phpunit "^7"` is an example of command to use to install a project dependency not meant for library consumers.
