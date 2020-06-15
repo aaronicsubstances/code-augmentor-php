@@ -177,3 +177,8 @@ For more information on the structure of augmenting code object, generated code 
 fixed it up.
    2. `composer dump-autoload` needs to be rerun when new classes are added to project with classmap instead of PSR-4 in composer.json.
    3. `composer require --dev phpunit/phpunit "^7"` is an example of command to use to install a project dependency not meant for library consumers.
+   4. Had to perform the following after extracting download of PHP CLI on Windows to get Composer working:
+       * rename *php.ini-development* to **php.ini**
+       * uncomment **extension_dir** directive
+       * uncomment/enable **openssl** extension
+       * uncomment/enable **mbstring** extension
