@@ -8,6 +8,10 @@ class ProcessCodeTask {
    public $verbose;
    
    public function execute($evalFunction) : void {
+       assert(!!$this->inputFile, "inputFile property is not set");
+       assert(!!$this->outputFile, "outputFile property is not set");
+       assert(!!$evalFunction);
+
        $this->allErrors = [];
        
        // ensure dir exists for outputFile
@@ -83,7 +87,7 @@ class ProcessCodeTask {
                     }
                         
                     $context->augCodeIndex = $i;
-                    $functionName = trim($augCode->blocks[0]->content);
+                    $functionName = self::retrieveFunctionName($augCode);
                     $genCodes = $this->processAugCode($evalFunction, $functionName, $augCode, $context);
                     foreach ($genCodes as $g) {
                         $fileGenCodeList[] = $g;
@@ -126,6 +130,15 @@ class ProcessCodeTask {
     
     public function logWarn(string $message) : void {
         print "[WARN] " . $message . PHP_EOL;
+    }
+
+    private static function retrieveFunctionName(&$augCode) {
+        $functionName = trim($augCode->blocks[0]->content);
+        if (strpos($functionName, "CodeAugmentorFunctions") === 0) { // NB: 3, not 2 equals
+            $functionName = "\\" . __NAMESPACE__  . "\\" .
+                $functionName;
+        }
+        return $functionName;
     }
     
     public function processAugCode($evalFunction, string $functionName, object $augCode, ProcessCodeContext $context) : array {
@@ -170,7 +183,7 @@ class ProcessCodeTask {
                 'id' => 0
             ];
         }
-        elseif (property_exists($item, 'contentParts')) {
+        elseif (property_exists($item, 'skipped') || property_exists($item, 'contentParts')) {
             if (!property_exists($item, 'id')) {
                 $item->id = 0;
             }
@@ -188,7 +201,12 @@ class ProcessCodeTask {
             // are culprits.
             // try conversion to string via concatenation and let
             // any exception be handled higher up the stack.
-            $content = '' . $item;
+            if ($item instanceof \stdClass) {
+                $content = self::compactJsonDump($item);
+            }
+            else {
+                $content = '' . $item;
+            }
             $contentPart = (object) [
                 'content' => $content,
                 'exactMatch' => FALSE

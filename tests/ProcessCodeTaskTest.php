@@ -107,6 +107,36 @@ final class ProcessCodeTaskTest extends TestCase
         print "Expected " . count($task->allErrors) . ' error(s)' . PHP_EOL;
     }
     
+    public function testContextScopeMethodAccessEvaler(): void {
+        $task = new ProcessCodeTask;
+        $task->inputFile = __DIR__ . DIRECTORY_SEPARATOR . 'resources' .
+            DIRECTORY_SEPARATOR . 'aug_codes-02.json';
+        $task->outputFile = self::$tmpdir . DIRECTORY_SEPARATOR . 'genCodes-php-02.json';
+        
+        self::printHeader(__METHOD__);
+        $task->execute(function($f, $a, $c) {
+            if ($f != "\"testUseOfGetScopeVar\"") {
+                return call_user_func($f, $a, $c);
+            }
+            self::assertEquals("NewTown", $c->getScopeVar("address"));
+            self::assertEquals("ICT", $c->getScopeVar("serviceType"));
+            self::assertEquals("ICT,Agric", $c->getScopeVar("allServiceTypes"));
+            self::assertEquals("OldTown", $c->globalScope["address"]);
+            self::assertEquals("    ", $c->getScopeVar("codeAugmentor_indent"));
+            return $c->newSkipGenCode();
+        });
+        self::printErrors($task);
+        $this->assertEmpty($task->allErrors);
+        $actualOutput = file_get_contents($task->outputFile);
+        $actualOutput = preg_replace("/\r\n|\n|\r/", "\n", $actualOutput);
+        $expectedOutput = "{}\n" .
+            "{\"fileId\":1,\"generatedCodes\":[" .
+            "{\"skipped\":true,\"id\":1}," .
+            "{\"skipped\":true,\"id\":2}," .
+            "{\"skipped\":true,\"id\":3}]}\n";
+        self::assertEquals($expectedOutput, $actualOutput);
+    }
+    
     static function printHeader($methodName) {
         print PHP_EOL;
         print $methodName . PHP_EOL;
