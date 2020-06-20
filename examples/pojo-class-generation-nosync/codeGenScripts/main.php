@@ -8,7 +8,7 @@ if ($argc > 3) {
     $instance->verbose = !!$argv[3];
 }
 
-$FUNCTION_NAME_REGEX = '/^(((.*CodeAugmentorFunctions)|MainFunctions|OtherFunctions)\\.)[a-zA-Z]\\w*$/';
+$FUNCTION_NAME_REGEX = '/^(((.*CodeAugmentorFunctions)|MyFunctions|OtherFunctions)::)[a-zA-Z]\\w*$/';
 $instance->execute(function($functionName, $augCode, $context) use ($FUNCTION_NAME_REGEX) {
     // validate name.
     if (!preg_match($FUNCTION_NAME_REGEX, $functionName)) {
