@@ -10,3 +10,4 @@ composer.phar
 /examples/**/generated/
 /examples/**/build/
 /examples/**/vendor/
+/examples/**/composer.lock

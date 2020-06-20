@@ -17,6 +17,10 @@ Below is a main script demonstrating how to set up the library for use with stat
 
 It requires input and ouput file command-line arguments, and optional third argument to enable verbose logging.
 
+```
+php main.php test-augCodes.json actual.json
+```
+
 ### composer.json
 
 ```json
@@ -50,7 +54,7 @@ $instance->execute(function($functionName, $augCode, $context) use ($FUNCTION_NA
         throw new \Exception("Invalid/Unsupported function name: " . $functionName);
     }
 
-    // make function call "dynamically".
+    // name is valid. make function call "dynamically".
     $result = call_user_func($functionName, $augCode, $context);
     return $result;
 });
@@ -110,7 +114,7 @@ class Worker {
 
 ```
 
-### test-genCodes.json (expected output file)
+### expected.json (expected output file)
 
 ```json
 {}
@@ -146,7 +150,7 @@ The `evalFunction` is called with every augmenting code object encountered in th
    * *fileAugCodes* - JSON object resulting of parsing current line of input file other than first line.
    * *augCodeIndex* - index of `augCode` parameter in `fileAugCodes->augmentingCodes` array
    * *newGenCode()* - convenience method available to clients for creating a generated code object with empty `contentParts` array field.
-   * newContent(content, exactMatch=false) - convenience method available to clients for creating a new content part object with fields set with arguments supplied to the function.
+   * *newContent(content, exactMatch=false)* - convenience method available to clients for creating a new content part object with fields set with arguments supplied to the function.
    * *newSkipGenCode()* - convenience method to create a generated code object indicating skipping of aug code section. Will have null content parts.
    * *getScopeVar(name)* - gets a variable from fileScope array with given name, or from globalScope array if not found in fileScope.
 
