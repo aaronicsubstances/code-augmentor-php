@@ -22,7 +22,7 @@ It requires input and ouput file command-line arguments, and optional third argu
 ```json
 {
     "require": {
-        "aaronicsubstances/code-augmentor-support": "^1.0.1"    
+        "aaronicsubstances/code-augmentor-support": "^2.0.0"    
     },
     "autoload": {
         "classmap": [ "Snippets.php", "Worker.php" ]    
@@ -42,19 +42,15 @@ $instance->outputFile = $argv[2];
 if ($argc > 3) {
     $instance->verbose = !!$argv[3];
 }
-assert(!!$instance->inputFile);
-assert(!!$instance->outputFile);
 
-$FUNCTION_NAME_REGEX = '/^((Snippets|Worker)\\.)[a-zA-Z]\\w*$/';
+$FUNCTION_NAME_REGEX = '/^(((.*CodeAugmentorFunctions)|Snippets|Worker)\\.)[a-zA-Z]\\w*$/';
 $instance->execute(function($functionName, $augCode, $context) use ($FUNCTION_NAME_REGEX) {
     // validate name.
     if (!preg_match($FUNCTION_NAME_REGEX, $functionName)) {
         throw new \Exception("Invalid/Unsupported function name: " . $functionName);
     }
 
-    // name is valid but replace . with :: in function name.
-    $functionName = str_replace('.', '::', $functionName);
-    // now make function call "dynamically".
+    // make function call "dynamically".
     $result = call_user_func($functionName, $augCode, $context);
     return $result;
 });
@@ -109,8 +105,8 @@ class Worker {
 
 ```json
 { "genCodeStartDirective": "//:GS:", "genCodeEndDirective": "//:GE:", "embeddedStringDirective": "//:STR:", "embeddedJsonDirective": "//:JSON:", "skipCodeStartDirective": "//:SS:", "skipCodeEndDirective": "//:SE:", "augCodeDirective": "//:AUG_CODE:", "inlineGenCodeDirective": "//:GG:", "nestedLevelStartMarker": "[", "nestedLevelEndMarker": "]" }
-{"fileId":1,"dir":"src","relativePath":"A1.py","augmentingCodes":[{"id":1,"directiveMarker":"//:AUG_CODE:","indent":"","lineNumber":1,"lineSeparator":"\n","nestedLevelNumber":0,"hasNestedLevelStartMarker":false,"hasNestedLevelEndMarker":false,"blocks":[{"stringify":false,"jsonify":false,"content":" Snippets.generateSerialVersionUID "}]}]}
-{"fileId":2,"dir":"src","relativePath":"B2.py","augmentingCodes":[{"id":1,"directiveMarker":"//:AUG_CODE:","indent":"","lineNumber":1,"lineSeparator":"\n","nestedLevelNumber":0,"hasNestedLevelStartMarker":false,"hasNestedLevelEndMarker":false,"blocks":[{"stringify":false,"jsonify":false,"content":" Worker.stringify "},{"stringify":true,"jsonify":false,"content":" SELECT * FROM contacts "},{"stringify":true,"jsonify":false,"content":" WHERE contacts.id = ? "}]},{"id":2,"directiveMarker":"//:AUG_CODE:","indent":"","lineNumber":19,"lineSeparator":"\n","nestedLevelNumber":0,"hasNestedLevelStartMarker":false,"hasNestedLevelEndMarker":false,"blocks":[{"stringify":false,"jsonify":false,"content":" Snippets.generateSerialVersionUID "},{"stringify":false,"jsonify":true,"content":"{ \"name\": \"expired\", \"type\": \"boolean\" } "}]}]}
+{"fileId":1,"dir":"src","relativePath":"A1.py","augmentingCodes":[{"id":1,"directiveMarker":"//:AUG_CODE:","indent":"","lineNumber":1,"lineSeparator":"\n","nestedLevelNumber":0,"hasNestedLevelStartMarker":false,"hasNestedLevelEndMarker":false,"blocks":[{"stringify":false,"jsonify":false,"content":" Snippets::generateSerialVersionUID "}]}]}
+{"fileId":2,"dir":"src","relativePath":"B2.py","augmentingCodes":[{"id":1,"directiveMarker":"//:AUG_CODE:","indent":"","lineNumber":1,"lineSeparator":"\n","nestedLevelNumber":0,"hasNestedLevelStartMarker":false,"hasNestedLevelEndMarker":false,"blocks":[{"stringify":false,"jsonify":false,"content":" Worker::stringify "},{"stringify":true,"jsonify":false,"content":" SELECT * FROM contacts "},{"stringify":true,"jsonify":false,"content":" WHERE contacts.id = ? "}]},{"id":2,"directiveMarker":"//:AUG_CODE:","indent":"","lineNumber":19,"lineSeparator":"\n","nestedLevelNumber":0,"hasNestedLevelStartMarker":false,"hasNestedLevelEndMarker":false,"blocks":[{"stringify":false,"jsonify":false,"content":" Snippets::generateSerialVersionUID "},{"stringify":false,"jsonify":true,"content":"{ \"name\": \"expired\", \"type\": \"boolean\" } "}]}]}
 
 ```
 
@@ -144,13 +140,28 @@ The `evalFunction` is called with every augmenting code object encountered in th
 
 ### Public Fields and Methods of `ProcessCodeContext` instances
 
-   * header - JSON object resulting from parsing first line of input file.
-   * globalScope - an array provided for use by clients which remains throughout parsing of entire input file.
-   * fileScope - an array provided for use by clients which is reset at the start of processing every line of input file.
-   * fileAugCodes - JSON object resulting of parsing current line of input file other than first line.
-   * augCodeIndex - index of `augCode` parameter in `fileAugCodes->augmentingCodes` array
-   * newGenCode() - convenience method available to clients for creating a generated code object with empty `contentParts` array field.
+   * *header* - JSON object resulting from parsing first line of input file.
+   * *globalScope* - an array provided for use by clients which remains throughout parsing of entire input file.
+   * *fileScope* - an array provided for use by clients which is reset at the start of processing every line of input file.
+   * *fileAugCodes* - JSON object resulting of parsing current line of input file other than first line.
+   * *augCodeIndex* - index of `augCode` parameter in `fileAugCodes->augmentingCodes` array
+   * *newGenCode()* - convenience method available to clients for creating a generated code object with empty `contentParts` array field.
    * newContent(content, exactMatch=false) - convenience method available to clients for creating a new content part object with fields set with arguments supplied to the function.
+   * *newSkipGenCode()* - convenience method to create a generated code object indicating skipping of aug code section. Will have null content parts.
+   * *getScopeVar(name)* - gets a variable from fileScope array with given name, or from globalScope array if not found in fileScope.
+
+### Reserved 'CodeAugmentor' Prefix
+
+CodeAugmentor supplies utility functions and variables by reserving the **CodeAugmentor** prefix. As such scripts should avoid naming aug code processing functions and variables in fileScope/globalScope with that prefix.
+
+The following variables are provided by default in context globalScope:
+
+   * *codeAugmentor_indent* - set with value of four spaces.
+
+The following functions are provided by **CodeAugmentorFunctions** class of this package for use to process aug codes:
+
+   * *CodeAugmentorFunctions::setScopeVar* - requires each embedded data in augmenting code section to be a JSON object. For each such object, every property of the object is used to set a variable in context fileScope whose value is the value of the property in the JSON object.
+   * *CodeAugmentorFunctions::setGlobalScopeVar* - same as setScopeVar, but rather sets variables in context globalScope.
 
 ### Note on JSON serialization
 

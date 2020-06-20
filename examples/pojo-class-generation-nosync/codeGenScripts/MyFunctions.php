@@ -19,7 +19,7 @@ class MyFunctions {
 
     public static function generateClassProps($augCode, $context) {
         $out = '';
-        $defaultIndent = OtherFunctions::defaultIndent();
+        $defaultIndent = $context->getScopeVar('codeAugmentor_indent');
         foreach ($context->fileScope['theClassProps'] as $propSpec) {
             $capitalized = ucfirst($propSpec->name);
             $out .= "public {$propSpec->type} get{$capitalized}() {";
@@ -48,7 +48,7 @@ class MyFunctions {
         }
         
         $out = '';
-        $defaultIndent = OtherFunctions::defaultIndent();
+        $defaultIndent = $context->getScopeVar('codeAugmentor_indent');
 
         // generate equals() override
         $out .= "@Override{$augCode->lineSeparator}";
@@ -120,7 +120,7 @@ class MyFunctions {
     }
 
     public static function generateToString($augCode, $context) {
-        $defaultIndent = OtherFunctions::defaultIndent();
+        $defaultIndent = $context->getScopeVar('codeAugmentor_indent');
         $out = '';
         $out .= "@Override{$augCode->lineSeparator}";
         $out .= "public String toString() {";
